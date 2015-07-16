@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -45,20 +46,42 @@ func formattm(t tm) string {
 	m := (t % hour) / minute
 	s := t % minute / second
 	ms := t % second / millisecond
-	return fmt.Sprintf("%02d:%02d:%02d,%03d", h, m, s, ms)
+	return fmt.Sprintf("%02d:%02d:%02d.%03d", h, m, s, ms)
 }
 
 func (t tm) String() string { return formattm(t) }
 
-func main() {
-	r := bufio.NewReader(os.Stdin)
-	if len(os.Args) == 2 {
-		f, err := os.Open(os.Args[1])
-		if err != nil {
-			fatal(err)
-		}
-		r = bufio.NewReader(f)
+const clipDir = "/Users/erin/Desktop/declips"
+const extractFname = "/Users/erin/de/extract.txt"
+
+func getNextFileNum() int {
+	files, err := ioutil.ReadDir(clipDir)
+	if err != nil {
+		fatal(err)
 	}
+	num := 0
+	for _, f := range files {
+		var n int
+		var ext string
+		_, err = fmt.Sscanf(f.Name(), "%d%s", &n, &ext)
+		if n > num {
+			num = n
+		}
+	}
+	return num+1
+}
+
+func main() {
+	if len(os.Args) > 1 {
+		fatal("usage: subtimeextractor\nextract times from ", extractFname)
+	}
+	fileNum := getNextFileNum()
+	f, err := os.Open(extractFname)
+	if err != nil {
+		fatal(err)
+	}
+	r := bufio.NewReader(f)
+	fmt.Println("all:")
 	for {
 		l, err := r.ReadString('\n')
 		if err != nil {
@@ -70,7 +93,11 @@ func main() {
 		a, b := parsetms(l)
 		a -= slop
 		b += slop
-		fmt.Println(a, b)
+		nm := fmt.Sprint("~/Desktop/declips/", fileNum, ".mp3")
+		fmt.Print(nm, ":\n")
+		fmt.Print("\t", "ffmpeg -y -i oh.mkv -ss ", a, " -to ", b, " ~/Desktop/declips/", fileNum, ".mp3\n")
+		fmt.Print("all: ", nm, "\n")
+		fileNum++
 	}
 }
 

@@ -1,4 +1,4 @@
-// Command subtimeextractor reads subtitle times from a file and prints ffmpeg commands to extract the corresponding times.
+// Command subx reads subtitle times from a file and prints a Makefile of ffmpeg commands to extract the corresponding times.
 package main
 
 import (

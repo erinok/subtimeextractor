@@ -53,6 +53,7 @@ func (t tm) String() string { return formattm(t) }
 
 const clipDir = "/Users/erin/Desktop/declips"
 const extractFname = "/Users/erin/de/extract.txt"
+const vidFname = "/Users/erin/Downloads/de/baader-meinhof/baader-meinhof.avi"
 
 func getNextFileNum() int {
 	files, err := ioutil.ReadDir(clipDir)
@@ -81,7 +82,7 @@ func main() {
 		fatal(err)
 	}
 	r := bufio.NewReader(f)
-	fmt.Println("all:")
+	fmt.Println("all:\n")
 	for {
 		l, err := r.ReadString('\n')
 		if err != nil {
@@ -95,8 +96,8 @@ func main() {
 		b += slop
 		nm := fmt.Sprint("~/Desktop/declips/", fileNum, ".mp3")
 		fmt.Print(nm, ":\n")
-		fmt.Print("\t", "ffmpeg -y -i oh.mkv -ss ", a, " -to ", b, " ~/Desktop/declips/", fileNum, ".mp3\n")
-		fmt.Print("all: ", nm, "\n")
+		fmt.Print("\t", "ffmpeg -y -i ", vidFname, "  -ss ", a, " -to ", b, " ~/Desktop/declips/", fileNum, ".mp3 &> /dev/null\n")
+		fmt.Print("all: ", nm, "\n\n")
 		fileNum++
 	}
 }

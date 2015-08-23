@@ -31,7 +31,7 @@ func parsetm(x string) tm {
 	return h*hour + m*minute + s*second + ms*millisecond
 }
 
-func parsetms(l string) (tm, tm) {
+func parsetmrange(l string) (tm, tm) {
 	// 00:28:48,251 --> 00:28:50,620 ¶ Komm mal rüber.
 	l = strings.Replace(l, "-->", "¶", -1)
 	parts := strings.Split(l, " ¶ ")
@@ -97,7 +97,7 @@ func main() {
 			}
 			fatal("error reading input:", err)
 		}
-		a, b := parsetms(l)
+		a, b := parsetmrange(l)
 		cl := clip{
 			tmrange{a, b},
 			tmrange{a - slop, a + (b-a)*2},

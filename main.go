@@ -51,6 +51,13 @@ func formattm(t tm) string {
 
 func (t tm) String() string { return formattm(t) }
 
+type tmrange struct{ a, b tm }
+
+type clip struct {
+	raw tmrange
+	tmrange
+}
+
 const clipDir = "/Users/erin/Desktop/declips"
 const extractFname = "/Users/erin/de/extract.txt"
 const vidFname = "/Users/erin/Downloads/de/baader-meinhof/baader-meinhof.avi"
@@ -69,20 +76,19 @@ func getNextFileNum() int {
 			num = n
 		}
 	}
-	return num+1
+	return num + 1
 }
 
 func main() {
 	if len(os.Args) > 1 {
 		fatal("usage: subtimeextractor\nextract times from ", extractFname)
 	}
-	fileNum := getNextFileNum()
 	f, err := os.Open(extractFname)
 	if err != nil {
 		fatal(err)
 	}
 	r := bufio.NewReader(f)
-	fmt.Println("all:\n")
+	var clips []clip
 	for {
 		l, err := r.ReadString('\n')
 		if err != nil {
@@ -92,11 +98,30 @@ func main() {
 			fatal("error reading input:", err)
 		}
 		a, b := parsetms(l)
-		a -= slop
-		b += slop
+		cl := clip{
+			tmrange{a, b},
+			tmrange{a - slop, a + (b-a)*2},
+		}
+		clips = append(clips, cl)
+	}
+
+	for i := 1; i < len(clips); i++ {
+		rb, b, ra := clips[i-1].raw.b, clips[i-1].b, clips[i].raw.a
+		if b > ra {
+			b = ra
+		}
+		if b < rb {
+			b = rb
+		}
+		clips[i-1].b = b
+	}
+
+	fmt.Println("all:\n")
+	fileNum := getNextFileNum()
+	for _, cl := range clips {
 		nm := fmt.Sprint("~/Desktop/declips/", fileNum, ".mp3")
 		fmt.Print(nm, ":\n")
-		fmt.Print("\t", "ffmpeg -y -i ", vidFname, "  -ss ", a, " -to ", b, " ~/Desktop/declips/", fileNum, ".mp3 &> /dev/null\n")
+		fmt.Print("\t", "ffmpeg -y -i ", vidFname, "  -ss ", cl.a, " -to ", cl.b, " ~/Desktop/declips/", fileNum, ".mp3 &> /dev/null\n")
 		fmt.Print("all: ", nm, "\n\n")
 		fileNum++
 	}

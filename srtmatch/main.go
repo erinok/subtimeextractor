@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -47,7 +48,7 @@ type xtract struct {
 }
 
 type sub struct {
-	a, b tm
+	a, b  tm
 	lines []string
 }
 
@@ -67,8 +68,8 @@ func parseSRT(fname string) ([]sub, error) {
 		a, b, err := parsetmrange(l)
 		if err == nil {
 			if n := len(cur.lines); n > 0 {
-				cur.lines = cur.lines[:n - 1]
-			}	
+				cur.lines = cur.lines[:n-1]
+			}
 			subs = append(subs, sub{a, b, nil})
 			cur = &subs[len(subs)-1]
 			continue
@@ -78,6 +79,17 @@ func parseSRT(fname string) ([]sub, error) {
 	return subs, nil
 }
 
+var spaceRE = regexp.MustCompile(`[[:space:]]+`)
+var punctRE = regexp.MustCompile(`[^\pL ]+`)
+
+func collapseLines(lines []string) string {
+	s := strings.Join(lines, " ")
+	s = spaceRE.ReplaceAllString(s, " ")
+	s = punctRE.ReplaceAllString(s, "")
+	s = strings.ToLower(s)
+	return s
+}
+
 func main() {
 	subs, err := parseSRT("/Users/erin/de/baader-meinhof-de.srt")
 	if err != nil {
@@ -85,9 +97,10 @@ func main() {
 	}
 	for _, sub := range subs {
 		fmt.Println(sub.a, sub.b)
-		for _, l := range sub.lines {
-			fmt.Print("\t", l)
-		}
+		fmt.Println(collapseLines(sub.lines))
+		// for _, l := range sub.lines {
+		// 	fmt.Print("\t", l)
+		// }
 	}
 }
 

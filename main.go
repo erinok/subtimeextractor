@@ -79,6 +79,8 @@ func getNextFileNum() int {
 	return num + 1
 }
 
+var extendright = true
+
 func main() {
 	if len(os.Args) > 1 {
 		fatal("usage: subtimeextractor\nextract times from ", extractFname)
@@ -100,7 +102,10 @@ func main() {
 		a, b := parsetmrange(l)
 		cl := clip{
 			tmrange{a, b},
-			tmrange{a - slop, a + (b-a)*2},
+			tmrange{a - slop, b - slop},
+		}
+		if extendright {
+			cl.tmrange =  tmrange{a - slop, a + (b-a)*2}
 		}
 		clips = append(clips, cl)
 	}

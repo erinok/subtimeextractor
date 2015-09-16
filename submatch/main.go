@@ -170,7 +170,7 @@ func main() {
 	for _, sub := range subs {
 		text.append(collapseLines(sub.lines), sub.a, sub.b)
 	}
-	for _, raw := range readlines("/Users/erin/de/lines.txt") {
+	for _, raw := range readlines("/Users/erin/de/match.txt") {
 		line := sanitize(raw)
 		k := bestmatch(line, text.text)
 		start, stop := text.lookupRange(k, k+len(line))

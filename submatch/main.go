@@ -11,6 +11,9 @@ import (
 
 type tm int
 
+var subsFile = "/Users/erin/de/baader-meinhof-de.srt"
+var matchFile = "/Users/erin/de/match.txt"
+
 const (
 	millisecond tm = 1
 	second         = 1000 * millisecond
@@ -162,7 +165,7 @@ func bestmatch(a, txt string) int {
 }
 
 func main() {
-	subs, err := parseSRT("/Users/erin/de/baader-meinhof-de.srt")
+	subs, err := parseSRT(subsFile)
 	if err != nil {
 		fatal(err)
 	}
@@ -170,7 +173,10 @@ func main() {
 	for _, sub := range subs {
 		text.append(collapseLines(sub.lines), sub.a, sub.b)
 	}
-	for _, raw := range readlines("/Users/erin/de/match.txt") {
+	for _, raw := range readlines(matchFile) {
+		if !strings.HasPrefix(raw, "¶") {
+			continue
+		}
 		line := sanitize(raw)
 		k := bestmatch(line, text.text)
 		start, stop := text.lookupRange(k, k+len(line))
